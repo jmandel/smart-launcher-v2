@@ -57,6 +57,12 @@ To generate new certificates for your ssl server:
 3. Execute `npm run cert`
 Then (re)start the server and it will use the new keys.
 
+## Local SMART + HAPI Stack
+For a turnkey local deployment with a HAPI FHIR R4 backend, daily reset script,
+and sample patient fixtures, follow the instructions in
+`docs/local-deployment.md`. Engineering notes that cover the supporting scripts,
+data workflow, and Docker configuration live in `docs/local-stack-overview.md`.
+
 ## Using Docker
 The launcher is also available as a Docker image. To use that simply run
 ```

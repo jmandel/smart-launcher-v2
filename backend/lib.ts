@@ -57,7 +57,7 @@ export function getFhirServerBaseUrl(req: Request) {
         console.error("Invalid sim: " + ex)
     }
 
-    const fhirVersion = req.params.fhir_release.toUpperCase();
+    const fhirVersion = (req.params?.fhir_release || "r4").toUpperCase();
     let fhirServer = config[`fhirServer${fhirVersion}` as keyof typeof config] as string;
 
     // Env variables like FHIR_SERVER_R2_INTERNAL can be set to point the

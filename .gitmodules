@@ -1,0 +1,4 @@
+[submodule "submodules/patient-browser"]
+	path = submodules/patient-browser
+	url = https://github.com/smart-on-fhir/patient-browser.git
+	branch = master

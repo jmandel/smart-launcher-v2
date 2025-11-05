@@ -12,6 +12,8 @@ import launcher        from "./routes/launcher"
 import launcherRemote  from "./routes/launcherRemote"
 import pkg             from "../package.json"
 import { globalErrorHandler, ipBlackList } from "./middlewares"
+import { asyncRouteWrap } from "./lib"
+import fhirProxy from "./routes/fhir/proxy"
 
 
 const app = express()
@@ -55,6 +57,14 @@ app.use([
     "/v/:fhir_release/fhir"
 ], fhirServer)
 
+const directFhir = express.Router({ mergeParams: true });
+directFhir.use((req, _, next) => {
+    req.params = { ...(req.params || {}), fhir_release: req.params?.fhir_release || "r4" };
+    next();
+});
+directFhir.use(express.text({ type: "*/*", limit: 1e6 }), asyncRouteWrap(fhirProxy));
+app.use("/fhir", directFhir);
+
 // The launcher endpoint
 app.get("/launcher", launcher);
 app.get("/remote-launch", launcherRemote);
@@ -79,7 +89,7 @@ app.get("/public_key", (_, res) => {
 app.use("/env.js", (_, res) => {
     const out = {
         NODE_ENV           : process.env.NODE_ENV      || "production",
-        PICKER_ORIGIN      : process.env.PICKER_ORIGIN || "https://patient-browser.smarthealthit.org",
+        PICKER_ORIGIN      : process.env.PICKER_ORIGIN || "/patient-browser",
         GOOGLE_ANALYTICS_ID: process.env.GOOGLE_ANALYTICS_ID,
         FHIR_SERVER_R2     : config.fhirServerR2,
         FHIR_SERVER_R3     : config.fhirServerR3,

@@ -1,0 +1,39 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/hapi
+    username: ${SPRING_DATASOURCE_USERNAME:hapi}
+    password: ${SPRING_DATASOURCE_PASSWORD:hapi}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    properties:
+      hibernate:
+        dialect: ca.uhn.fhir.jpa.model.dialect.HapiFhirPostgresDialect
+        format_sql: false
+        show_sql: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    url: jdbc:postgresql://postgres:5432/hapi
+    user: ${SPRING_DATASOURCE_USERNAME:hapi}
+    password: ${SPRING_DATASOURCE_PASSWORD:hapi}
+
+hapi:
+  fhir:
+    fhir_version: R4
+    server_address: ${HAPI_PUBLIC_BASE_URL:http://localhost:8080/fhir}
+    openapi_enabled: true
+    allow_external_references: true
+    enforce_referential_integrity_on_write: false
+    enforce_referential_integrity_on_delete: false
+    client_id_strategy: ANY
+    use_apache_address_strategy: true
+    use_apache_address_strategy_https: false
+    cors:
+      allow_Credentials: true
+      allowed_origin:
+        - "*"

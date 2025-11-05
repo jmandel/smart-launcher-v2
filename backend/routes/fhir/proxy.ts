@@ -6,7 +6,7 @@ import { getRequestBaseURL, getFhirServerBaseUrl, validateToken } from "../../li
 export default async function proxy(req: Request, res: Response) {
 
     // Validate FHIR Version -----------------------------------------------
-    const fhirVersion      = req.params.fhir_release.toUpperCase();
+    const fhirVersion      = (req.params?.fhir_release || "r4").toUpperCase();
     const fhirVersionLower = fhirVersion.toLowerCase();
     const fhirServer       = getFhirServerBaseUrl(req);
 

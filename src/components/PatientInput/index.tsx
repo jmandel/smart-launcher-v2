@@ -187,8 +187,9 @@ function PatientPicker({
                             src={ getPickerUrl({ selection, fhirVersion }) }
                             onLoad={
                                 e => {
+                                    const pickerUrl = getPickerUrl({ selection, fhirVersion });
                                     connectToPickerWindow(
-                                        getPickerOrigin(),
+                                        new URL(pickerUrl).origin,
                                         fhirVersion,
                                         // @ts-ignore
                                         e.target.contentWindow,
@@ -208,11 +209,25 @@ function PatientPicker({
 }
 
 function getPickerOrigin() {
-    let o = ENV.PICKER_ORIGIN;
-    if (window.location.protocol === "https:") {
-        o = o.replace(/^https?:/, "https:");
+    const configured = (ENV.PICKER_ORIGIN || "").trim();
+
+    if (!configured) {
+        return `${window.location.origin}/patient-browser`;
     }
-    return o
+
+    if (configured.startsWith("/")) {
+        return `${window.location.origin}${configured}`;
+    }
+
+    if (!/^https?:/i.test(configured)) {
+        return `${window.location.origin}/${configured.replace(/^\/+/, "")}`;
+    }
+
+    if (window.location.protocol === "https:") {
+        return configured.replace(/^http:/i, "https:");
+    }
+
+    return configured;
 }
 
 function getPickerUrl({
@@ -300,4 +315,3 @@ function connectToPickerWindow(pickerOrigin: string, fhirVersion: FhirVersion, w
     // Now just wait for the user to interact with the patient picker
     window.addEventListener('message', onMessage);
 }
-
