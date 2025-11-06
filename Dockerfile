@@ -1,43 +1,41 @@
-# Stage 1: Build the application
-FROM node:23 AS build
-
-# Set the working directory
+# ---- Stage 1: Build ----
+FROM node:23-alpine AS build
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Deterministic, cacheable install
 COPY package.json package-lock.json ./
-
-# Install dependencies
 RUN npm ci
 
-# Copy the rest of the application code
+# Copy sources and build
 COPY . .
-
-# Build the application
 RUN npm run build
 
-# Stage 2: Create the runtime environment
-FROM node:18-alpine AS runtime
+# Archive the build output to avoid hashing quirks when copying many files
+RUN tar -C /app -czf /tmp/build.tgz build
 
-# Set the working directory
+# ---- Stage 2: Runtime ----
+FROM node:23-alpine AS runtime
 WORKDIR /app
 
-# Copy only the necessary files from the build stage
-COPY --from=build /app/package.json /app/package-lock.json ./
-COPY --from=build /app/node_modules ./node_modules
+# Install only production dependencies against the runtime image ABI
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+# Copy server code, static assets, and keys
 COPY --from=build /app/backend ./backend
 COPY --from=build /app/public ./public
 COPY --from=build /app/private-key.pem ./private-key.pem
 COPY --from=build /app/public-key.pem ./public-key.pem
 COPY --from=build /app/src/isomorphic ./src/isomorphic
-COPY --from=build /app/build ./build
 
-# Set environment variables
-ENV NODE_ENV="production"
-ENV PORT="80"
+# Expand the pre-packed build directory
+COPY --from=build /tmp/build.tgz /tmp/build.tgz
+RUN mkdir -p /app/build && tar -C /app -xzf /tmp/build.tgz
 
-# Expose the port
+ENV NODE_ENV=production
+ENV PORT=80
 EXPOSE 80
 
-# Command to run the application
+# The launcher still runs directly from TypeScript entrypoints. If the build
+# process emits compiled JS, switch this to `node build/server/index.js`.
 CMD ["/app/node_modules/.bin/ts-node", "--skipProject", "--transpile-only", "./backend/index.ts"]
