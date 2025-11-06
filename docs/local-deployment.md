@@ -93,26 +93,23 @@ COMPOSE_ENV_FILE=env/prod.env ./scripts/restore-hapi-db.sh
 
 If the stack sits behind a public hostname, drop the overrides into an env file
 and pass it to Docker Compose. Anything set in the env file wins over the values
-in `env/local.env`.
-
-- `HAPI_PUBLIC_BASE_URL`: Canonical base URL that HAPI should embed in bundles
-  (e.g., `https://launch.example.org/fhir`).
-- `FHIR_SERVER_R4`: URL the launcher proxies to (defaults to
-  `http://hapi:8080/fhir` for the internal network).
-- `FHIR_SERVER_R4_INTERNAL`: Optional override for the internal Docker network
-  target (defaults to `http://hapi:8080/fhir`).
+in `env/local.env`. The launcher derives its public base URL from the incoming
+request headers, so make sure any reverse proxy forwards `X-Forwarded-Proto`
+and `X-Forwarded-Host`. Override `FHIR_SERVER_R4` only if the upstream HAPI
+instance lives somewhere other than `http://hapi:8080/fhir` within the Docker
+network—the launcher will publish `/v/r4/fhir` for browser clients either way,
+and HAPI now consumes the same variable for its canonical `server_address`.
+This variable must be defined; the sample `env/local.env` sets it to
+`http://hapi:8080/fhir`.
 
 Example:
 
 ```bash
 cp env/local.env env/prod.env
-sed -i 's#http://smartlauncher.localhost:8888/fhir#https://launch.example.org/fhir#g' env/prod.env
+sed -i 's#http://hapi:8080/fhir#http://custom-hapi:8080/fhir#g' env/prod.env
 echo "LAUNCHER_PORT=80" >> env/prod.env
 docker compose --env-file env/prod.env up -d
 ```
-
-When reverse-proxying, forward the `X-Forwarded-Proto` and `X-Forwarded-Host`
-headers so HAPI generates the expected absolute links.
 
 ### Rebuilding the bundled patient browser
 

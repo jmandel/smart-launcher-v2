@@ -26,7 +26,7 @@ services:
       SPRING_CONFIG_ADDITIONAL_LOCATION: file:/config/
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-hapi}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-hapi}
-      HAPI_PUBLIC_BASE_URL: ${HAPI_PUBLIC_BASE_URL:-http://localhost:8080/fhir}
+      FHIR_SERVER_R4: ${FHIR_SERVER_R4}
     volumes:
       - ./docker/hapi/application.yaml:/config/application.yaml:ro
     ports:
@@ -44,8 +44,7 @@ services:
       HOST: 0.0.0.0
       FHIR_SERVER_R2: ""
       FHIR_SERVER_R3: ""
-      FHIR_SERVER_R4: ${FHIR_SERVER_R4:-http://localhost:8080/fhir}
-      FHIR_SERVER_R4_INTERNAL: ${FHIR_SERVER_R4_INTERNAL:-http://hapi:8080/fhir}
+      FHIR_SERVER_R4: ${FHIR_SERVER_R4}
     ports:
       - "${LAUNCHER_PORT:-8081}:80"
 

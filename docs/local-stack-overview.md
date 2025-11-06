@@ -11,12 +11,10 @@ operate it.
 - `docker-compose.yml` now defines a three-service stack:
   - `postgres` (16-alpine) – persistent storage for HAPI.
   - `hapi` (`hapiproject/hapi:v7.6.0`) – configured for PostgreSQL, R4, and a
-    canonical base URL provided by the `HAPI_PUBLIC_BASE_URL` environment
-    variable.
+    canonical base URL set to the internal service address (`http://hapi:8080/fhir`).
   - `launcher` – built from this repository and exposes the SMART launcher on
-    port 80 inside the container. It reads `FHIR_SERVER_R4` for the public FHIR
-    URL and `FHIR_SERVER_R4_INTERNAL` for the internal Docker-network target
-    (default `http://hapi:8080/fhir`).
+    port 80 inside the container. It reads `FHIR_SERVER_R4` for the internal
+    Docker-network target (`env/local.env` supplies `http://hapi:8080/fhir`).
 - The Compose file is deliberately lean so it can be steered with env files. The
   repo ships with `env/local.env`, and additional files can be created for other
   environments. Launch with:
@@ -46,8 +44,7 @@ Three scripts live in `scripts/` to fetch, load, and reset data:
 
 3. `./scripts/reset-hapi-db.sh`
    - Stops HAPI, drops and recreates the Postgres schema, restarts HAPI,
-     and invokes the loader with `TARGET_FHIR_BASE` derived from
-     `HAPI_PUBLIC_BASE_URL`.
+     and invokes the loader with `TARGET_FHIR_BASE` derived from the current env.
    - Suitable for daily cron jobs to guarantee a clean set of fixture data.
 
 4. `./scripts/snapshot-hapi-db.sh` / `./scripts/restore-hapi-db.sh`
@@ -72,15 +69,15 @@ Three scripts live in `scripts/` to fetch, load, and reset data:
 
 ### Launcher + HAPI configuration tweaks
 
-- `backend/config.ts` loads `FHIR_SERVER_R4` from the environment; if
-  `FHIR_SERVER_R4_INTERNAL` is provided it’s used for direct proxy calls so the
-  launcher never loops back on itself.
+- `backend/config.ts` loads `FHIR_SERVER_R4` from the environment and directs
+  proxy calls to that internal base so the launcher never loops back on itself.
 - `backend/index.ts` serves the built patient browser and emits the correct
   `PICKER_ORIGIN` through `env.js`.
 - HAPI relies on PostgreSQL. Its `application.yaml` (under `docker/hapi/`)
   enables `client_id_strategy: ANY`, disables referential integrity checks
-  (because the fixtures are stitched together from external sources), and uses
-  `server_address=${HAPI_PUBLIC_BASE_URL}` so bundle links stay consistent.
+  (because the fixtures are stitched together from external sources), and sets
+  `server_address=${FHIR_SERVER_R4}` so bundle links always line up with the
+  launcher’s expectation.
 
 ### Operations quick reference
 

@@ -25,7 +25,7 @@ spring:
 hapi:
   fhir:
     fhir_version: R4
-    server_address: ${HAPI_PUBLIC_BASE_URL:http://localhost:8080/fhir}
+    server_address: ${FHIR_SERVER_R4}
     openapi_enabled: true
     allow_external_references: true
     enforce_referential_integrity_on_write: false

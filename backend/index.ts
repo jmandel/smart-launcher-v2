@@ -12,7 +12,7 @@ import launcher        from "./routes/launcher"
 import launcherRemote  from "./routes/launcherRemote"
 import pkg             from "../package.json"
 import { globalErrorHandler, ipBlackList } from "./middlewares"
-import { asyncRouteWrap } from "./lib"
+import { asyncRouteWrap, getRequestBaseURL } from "./lib"
 import fhirProxy from "./routes/fhir/proxy"
 
 
@@ -86,14 +86,18 @@ app.get("/public_key", (_, res) => {
 });
 
 // Provide some env variables to the frontend
-app.use("/env.js", (_, res) => {
+app.use("/env.js", (req, res) => {
+    const baseUrl = getRequestBaseURL(req).replace(/\/+$/, "");
+    const proxiedFhirUrl = (version: "r2" | "r3" | "r4", configuredBase?: string) =>
+        configuredBase ? `${baseUrl}/v/${version}/fhir` : "";
+
     const out = {
         NODE_ENV           : process.env.NODE_ENV      || "production",
         PICKER_ORIGIN      : process.env.PICKER_ORIGIN || "/patient-browser",
         GOOGLE_ANALYTICS_ID: process.env.GOOGLE_ANALYTICS_ID,
-        FHIR_SERVER_R2     : config.fhirServerR2,
-        FHIR_SERVER_R3     : config.fhirServerR3,
-        FHIR_SERVER_R4     : config.fhirServerR4,
+        FHIR_SERVER_R2     : proxiedFhirUrl("r2", config.fhirServerR2),
+        FHIR_SERVER_R3     : proxiedFhirUrl("r3", config.fhirServerR3),
+        FHIR_SERVER_R4     : proxiedFhirUrl("r4", config.fhirServerR4),
         ACCESS_TOKEN       : jwt.sign({ client_id: "launcherUI" }, config.jwtSecret, { expiresIn: "10 years" }),
         VERSION            : pkg.version,
         COMMIT             : process.env.SOURCE_VERSION
