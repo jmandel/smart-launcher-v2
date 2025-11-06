@@ -70,6 +70,25 @@ example, using cron:
 0 3 * * * cd /home/ubuntu/smart-launcher-exp && ./scripts/reset-hapi-db.sh >> /var/log/smart-launcher-reset.log 2>&1
 ```
 
+### Database snapshots
+
+When the dataset becomes large it is faster to capture a Postgres snapshot than
+to replay all fixtures. Two helper scripts manage gzip-compressed dumps in
+`./snapshots/`:
+
+- `./scripts/snapshot-hapi-db.sh` – dumps the current database state (defaults to
+  `snapshots/hapi-baseline.dump`)
+- `./scripts/restore-hapi-db.sh` – stops HAPI, drops the database, recreates it,
+  and restores from the chosen dump
+
+By default the scripts talk to the services defined in `docker-compose.yml`.
+Supply alternative env files by setting `COMPOSE_ENV_FILE`, e.g.:
+
+```bash
+COMPOSE_ENV_FILE=env/prod.env ./scripts/snapshot-hapi-db.sh
+COMPOSE_ENV_FILE=env/prod.env ./scripts/restore-hapi-db.sh
+```
+
 ### Configuring Public URLs
 
 If the stack sits behind a public hostname, drop the overrides into an env file

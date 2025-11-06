@@ -50,6 +50,12 @@ Three scripts live in `scripts/` to fetch, load, and reset data:
      `HAPI_PUBLIC_BASE_URL`.
    - Suitable for daily cron jobs to guarantee a clean set of fixture data.
 
+4. `./scripts/snapshot-hapi-db.sh` / `./scripts/restore-hapi-db.sh`
+   - `snapshot` writes a compressed `pg_dump -Fc` file to `./snapshots`.
+   - `restore` stops HAPI, recreates the database, and pipes the dump through
+     `pg_restore`. This is the fastest way to reset to a known baseline when
+     the fixture load becomes large.
+
 ### Patient browser submodule
 
 - The SMART patient picker is vendored as a git submodule in
@@ -84,6 +90,8 @@ Three scripts live in `scripts/` to fetch, load, and reset data:
 | Download fixtures | `PATIENT_COUNT=all npm run fixtures:download` |
 | Load fixtures | `npm run fixtures:load` |
 | Reset HAPI daily | `./scripts/reset-hapi-db.sh` |
+| Snapshot database | `./scripts/snapshot-hapi-db.sh` |
+| Restore database | `./scripts/restore-hapi-db.sh` |
 | Build patient browser | `npm run build:patient-browser` |
 | Bring stack up | `docker compose --env-file env/local.env up -d` |
 | Update patient-browser submodule | `git submodule update --remote --merge submodules/patient-browser` |
