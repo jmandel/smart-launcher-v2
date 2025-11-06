@@ -44,8 +44,8 @@ services:
       HOST: 0.0.0.0
       FHIR_SERVER_R2: ""
       FHIR_SERVER_R3: ""
-      FHIR_SERVER_R4: ${LAUNCHER_FHIR_SERVER_R4:-http://localhost:8080/fhir}
-      FHIR_SERVER_R4_INTERNAL: ${LAUNCHER_FHIR_SERVER_R4_INTERNAL:-http://hapi:8080/fhir}
+      FHIR_SERVER_R4: ${FHIR_SERVER_R4:-http://localhost:8080/fhir}
+      FHIR_SERVER_R4_INTERNAL: ${FHIR_SERVER_R4_INTERNAL:-http://hapi:8080/fhir}
     ports:
       - "${LAUNCHER_PORT:-8081}:80"
 

@@ -97,8 +97,10 @@ in `env/local.env`.
 
 - `HAPI_PUBLIC_BASE_URL`: Canonical base URL that HAPI should embed in bundles
   (e.g., `https://launch.example.org/fhir`).
-- `LAUNCHER_FHIR_SERVER_R4`: URL the launcher proxies to (defaults to
+- `FHIR_SERVER_R4`: URL the launcher proxies to (defaults to
   `http://hapi:8080/fhir` for the internal network).
+- `FHIR_SERVER_R4_INTERNAL`: Optional override for the internal Docker network
+  target (defaults to `http://hapi:8080/fhir`).
 
 Example:
 
